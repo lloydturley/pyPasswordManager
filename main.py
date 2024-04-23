@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip
+import json
 
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
@@ -33,22 +34,31 @@ def save_password():
     website = website_input.get().strip()
     email = emun_input.get().strip()
     password = password_input.get().strip()
+    new_data = {
+        website: {
+            "email": email,
+            "password": password
+        }
+    }
 
     if website == "" or email == "" or password == "":
         messagebox.showinfo(title="Operational Error", message="An entry is empty and it can't be.  Fix it.")
     else:
-        is_ok = messagebox.askokcancel(title=website, message=f"These are the details entered: \nEmail: {email} "
-                                                              f"\nPassword: {password} \nIs it ok to save?")
-
-        if is_ok:
-            line = f"{website} | {email} | {password}\n"
-            with open("passwordFile.txt", "a") as file:
-                file.write(line)
-
+        try:
+            with open("passwordFile.json", "r") as file:
+                data = json.load(file)
+                data.update(new_data)
+        except FileNotFoundError:
+            with open("passwordFile.json", "w") as file:
+                json.dump(new_data, file, indent=4)
+        else:
+            data.update(new_data)
+            with open("passwordFile.json", "w") as file:
+                json.dump(data, file, indent=4)
+        finally:
             website_input.delete(0, END)
             password_input.delete(0, END)
-        website_input.focus()
-
+            website_input.focus()
 
 # ---------------------------- UI SETUP ------------------------------- #
 
